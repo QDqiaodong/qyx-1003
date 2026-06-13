@@ -9,7 +9,7 @@
         </div>
       </div>
       <div class="focus-summary">
-        <span class="summary-badge" :class="{ 'badge-danger': overdueTasks.length > 0 }">
+        <span class="summary-badge" :class="{ 'badge-danger': overdueTasks.length > 0, 'badge-urgent': overdueTasks.length === 0 && urgentTasks.length > 0, 'badge-soon': overdueTasks.length === 0 && urgentTasks.length === 0 && soonTasks.length > 0 }">
           {{ totalPending }} 项待处理
         </span>
       </div>
@@ -53,19 +53,19 @@
         </div>
       </div>
 
-      <div class="focus-group glass" :class="{ 'group-warning': dueTodayTasks.length > 0 }">
+      <div class="focus-group glass" :class="{ 'group-urgent': urgentTasks.length > 0 }">
         <div class="group-header">
           <div class="group-title">
-            <span class="group-icon warning-icon">📅</span>
-            <h3>今日到期</h3>
-            <span class="group-count warning-count">{{ dueTodayTasks.length }}</span>
+            <span class="group-icon urgent-icon">⚡</span>
+            <h3>24小时内到期</h3>
+            <span class="group-count urgent-count">{{ urgentTasks.length }}</span>
           </div>
         </div>
         <div class="group-tasks">
           <transition-group name="fade">
             <div 
-              v-for="task in dueTodayTasks" 
-              :key="'today-' + task.id" 
+              v-for="task in urgentTasks" 
+              :key="'urgent-' + task.id" 
               :class="['focus-task-item', { 'is-completed': task.completed }]"
             >
               <label class="mini-checkbox">
@@ -78,14 +78,51 @@
                   <span :class="['priority-mini-tag', `mini-${task.priority}`]">
                     {{ priorityLabel(task.priority) }}
                   </span>
-                  <span class="due-text warning-text">{{ formatTime(task.dueDate) }}</span>
+                  <span class="due-text urgent-text">{{ formatTime(task.dueDate) }}</span>
                 </div>
               </div>
             </div>
           </transition-group>
-          <div v-if="dueTodayTasks.length === 0" class="empty-group">
-            <span class="empty-icon">🎯</span>
-            <span>今日无截止任务</span>
+          <div v-if="urgentTasks.length === 0" class="empty-group">
+            <span class="empty-icon">🕐</span>
+            <span>无即将到期任务</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="focus-group glass" :class="{ 'group-soon': soonTasks.length > 0 }">
+        <div class="group-header">
+          <div class="group-title">
+            <span class="group-icon soon-icon">📆</span>
+            <h3>3天内到期</h3>
+            <span class="group-count soon-count">{{ soonTasks.length }}</span>
+          </div>
+        </div>
+        <div class="group-tasks">
+          <transition-group name="fade">
+            <div 
+              v-for="task in soonTasks" 
+              :key="'soon-' + task.id" 
+              :class="['focus-task-item', { 'is-completed': task.completed }]"
+            >
+              <label class="mini-checkbox">
+                <input type="checkbox" :checked="task.completed" @change="toggleTask(task)">
+                <span class="mini-check-box"></span>
+              </label>
+              <div class="task-info">
+                <span class="task-text">{{ task.text }}</span>
+                <div class="task-mini-meta">
+                  <span :class="['priority-mini-tag', `mini-${task.priority}`]">
+                    {{ priorityLabel(task.priority) }}
+                  </span>
+                  <span class="due-text soon-text">{{ formatTime(task.dueDate) }}</span>
+                </div>
+              </div>
+            </div>
+          </transition-group>
+          <div v-if="soonTasks.length === 0" class="empty-group">
+            <span class="empty-icon">📋</span>
+            <span>暂无近期到期任务</span>
           </div>
         </div>
       </div>
@@ -93,16 +130,16 @@
       <div class="focus-group glass">
         <div class="group-header">
           <div class="group-title">
-            <span class="group-icon primary-icon">✍️</span>
-            <h3>由我创建</h3>
-            <span class="group-count">{{ createdByMeTasks.length }}</span>
+            <span class="group-icon primary-icon">📝</span>
+            <h3>普通待办</h3>
+            <span class="group-count">{{ normalTasks.length }}</span>
           </div>
         </div>
         <div class="group-tasks">
           <transition-group name="fade">
             <div 
-              v-for="task in createdByMeTasks" 
-              :key="'created-' + task.id" 
+              v-for="task in normalTasks" 
+              :key="'normal-' + task.id" 
               :class="['focus-task-item', { 'is-completed': task.completed }]"
             >
               <label class="mini-checkbox">
@@ -115,51 +152,14 @@
                   <span :class="['priority-mini-tag', `mini-${task.priority}`]">
                     {{ priorityLabel(task.priority) }}
                   </span>
-                  <span class="assignee-text">指派: {{ task.assigneeName || '未指派' }}</span>
+                  <span v-if="task.dueDate" class="due-text">{{ formatTime(task.dueDate) }}</span>
                 </div>
               </div>
             </div>
           </transition-group>
-          <div v-if="createdByMeTasks.length === 0" class="empty-group">
-            <span class="empty-icon">📝</span>
-            <span>暂无我创建的任务</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="focus-group glass">
-        <div class="group-header">
-          <div class="group-title">
-            <span class="group-icon success-icon">👤</span>
-            <h3>指派给我</h3>
-            <span class="group-count">{{ assignedToMeTasks.length }}</span>
-          </div>
-        </div>
-        <div class="group-tasks">
-          <transition-group name="fade">
-            <div 
-              v-for="task in assignedToMeTasks" 
-              :key="'assigned-' + task.id" 
-              :class="['focus-task-item', { 'is-completed': task.completed }]"
-            >
-              <label class="mini-checkbox">
-                <input type="checkbox" :checked="task.completed" @change="toggleTask(task)">
-                <span class="mini-check-box"></span>
-              </label>
-              <div class="task-info">
-                <span class="task-text">{{ task.text }}</span>
-                <div class="task-mini-meta">
-                  <span :class="['priority-mini-tag', `mini-${task.priority}`]">
-                    {{ priorityLabel(task.priority) }}
-                  </span>
-                  <span class="creator-text">创建者: {{ task.username }}</span>
-                </div>
-              </div>
-            </div>
-          </transition-group>
-          <div v-if="assignedToMeTasks.length === 0" class="empty-group">
+          <div v-if="normalTasks.length === 0" class="empty-group">
             <span class="empty-icon">🎐</span>
-            <span>暂无指派给我的任务</span>
+            <span>暂无普通待办</span>
           </div>
         </div>
       </div>
@@ -183,47 +183,38 @@ export default {
       );
     });
 
+    const sortByPriority = (a, b) => {
+      const priorityWeight = { high: 3, medium: 2, low: 1 };
+      return priorityWeight[b.priority] - priorityWeight[a.priority];
+    };
+
     const overdueTasks = computed(() => {
       return myRelatedTasks.value
         .filter(t => !t.completed && utils.isOverdue(t.dueDate))
-        .sort((a, b) => {
-          const priorityWeight = { high: 3, medium: 2, low: 1 };
-          return priorityWeight[b.priority] - priorityWeight[a.priority];
-        });
+        .sort(sortByPriority);
     });
 
-    const dueTodayTasks = computed(() => {
+    const urgentTasks = computed(() => {
       return myRelatedTasks.value
-        .filter(t => !t.completed && utils.isDueToday(t.dueDate))
-        .sort((a, b) => {
-          const priorityWeight = { high: 3, medium: 2, low: 1 };
-          return priorityWeight[b.priority] - priorityWeight[a.priority];
-        });
+        .filter(t => !t.completed && utils.isDueWithin24h(t.dueDate))
+        .sort(sortByPriority);
     });
 
-    const createdByMeTasks = computed(() => {
-      if (!props.currentUser) return [];
+    const soonTasks = computed(() => {
       return myRelatedTasks.value
-        .filter(t => !t.completed && t.userId === props.currentUser.id && !utils.isDueToday(t.dueDate) && !utils.isOverdue(t.dueDate))
-        .sort((a, b) => {
-          const priorityWeight = { high: 3, medium: 2, low: 1 };
-          return priorityWeight[b.priority] - priorityWeight[a.priority];
-        });
+        .filter(t => !t.completed && utils.isDueWithin3Days(t.dueDate) && !utils.isDueWithin24h(t.dueDate))
+        .sort(sortByPriority);
     });
 
-    const assignedToMeTasks = computed(() => {
-      if (!props.currentUser) return [];
+    const normalTasks = computed(() => {
       return myRelatedTasks.value
-        .filter(t => !t.completed && t.assigneeId === props.currentUser.id && !utils.isDueToday(t.dueDate) && !utils.isOverdue(t.dueDate))
-        .sort((a, b) => {
-          const priorityWeight = { high: 3, medium: 2, low: 1 };
-          return priorityWeight[b.priority] - priorityWeight[a.priority];
-        });
+        .filter(t => !t.completed && !utils.isOverdue(t.dueDate) && !utils.isDueWithin24h(t.dueDate) && !utils.isDueWithin3Days(t.dueDate))
+        .sort(sortByPriority);
     });
 
     const totalPending = computed(() => {
-      return overdueTasks.value.length + dueTodayTasks.value.length 
-        + createdByMeTasks.value.length + assignedToMeTasks.value.length;
+      return overdueTasks.value.length + urgentTasks.value.length
+        + soonTasks.value.length + normalTasks.value.length;
     });
 
     const formatTime = (ts) => utils.formatDate(ts);
@@ -250,9 +241,9 @@ export default {
 
     return {
       overdueTasks,
-      dueTodayTasks,
-      createdByMeTasks,
-      assignedToMeTasks,
+      urgentTasks,
+      soonTasks,
+      normalTasks,
       totalPending,
       formatTime,
       priorityLabel,

@@ -23,24 +23,46 @@
     </div>
 
     <div class="stat-widget glass">
-      <div class="widget-icon warning">⏳</div>
+      <div class="widget-icon danger">🚨</div>
       <div class="widget-data">
-        <span class="widget-label">推进中</span>
-        <span class="widget-value">{{ tasks.length - completedCount }}</span>
+        <span class="widget-label">已逾期</span>
+        <span class="widget-value">{{ overdueCount }}</span>
       </div>
-      <div class="widget-trend warning-text">
-        <span>正则处理</span>
+      <div class="widget-trend danger-text">
+        <span>需立即处理</span>
       </div>
     </div>
 
     <div class="stat-widget glass">
-      <div class="widget-icon danger">🚨</div>
+      <div class="widget-icon urgent-widget-icon">⚡</div>
       <div class="widget-data">
-        <span class="widget-label">紧急/逾期</span>
-        <span class="widget-value">{{ nearExpiryCount }}</span>
+        <span class="widget-label">24小时内到期</span>
+        <span class="widget-value">{{ urgentCount }}</span>
       </div>
-      <div class="widget-trend danger-text">
-        <span>优先级关注</span>
+      <div class="widget-trend urgent-text">
+        <span>即将到期</span>
+      </div>
+    </div>
+
+    <div class="stat-widget glass">
+      <div class="widget-icon soon-widget-icon">�</div>
+      <div class="widget-data">
+        <span class="widget-label">3天内到期</span>
+        <span class="widget-value">{{ soonCount }}</span>
+      </div>
+      <div class="widget-trend soon-text">
+        <span>近期关注</span>
+      </div>
+    </div>
+
+    <div class="stat-widget glass">
+      <div class="widget-icon primary">📋</div>
+      <div class="widget-data">
+        <span class="widget-label">普通待办</span>
+        <span class="widget-value">{{ normalCount }}</span>
+      </div>
+      <div class="widget-trend">
+        <span>正常推进</span>
       </div>
     </div>
 
@@ -88,7 +110,10 @@ export default {
   props: ['tasks', 'currentUser'],
   setup(props) {
     const completedCount = computed(() => props.tasks.filter(t => t.completed).length);
-    const nearExpiryCount = computed(() => props.tasks.filter(t => !t.completed && (utils.isNearExpiry(t.dueDate) || utils.isExpired(t.dueDate))).length);
+    const overdueCount = computed(() => props.tasks.filter(t => !t.completed && utils.isOverdue(t.dueDate)).length);
+    const urgentCount = computed(() => props.tasks.filter(t => !t.completed && utils.isDueWithin24h(t.dueDate)).length);
+    const soonCount = computed(() => props.tasks.filter(t => !t.completed && utils.isDueWithin3Days(t.dueDate) && !utils.isDueWithin24h(t.dueDate)).length);
+    const normalCount = computed(() => props.tasks.filter(t => !t.completed && !utils.isOverdue(t.dueDate) && !utils.isDueWithin24h(t.dueDate) && !utils.isDueWithin3Days(t.dueDate)).length);
     
     const myCreated = computed(() => props.tasks.filter(t => t.userId === props.currentUser?.id).length);
     const myAssigned = computed(() => props.tasks.filter(t => t.assigneeId === props.currentUser?.id).length);
@@ -100,7 +125,7 @@ export default {
         return Math.round((done / myTasks.length) * 100);
     });
 
-    return { completedCount, nearExpiryCount, myCreated, myAssigned, completionRate };
+    return { completedCount, overdueCount, urgentCount, soonCount, normalCount, myCreated, myAssigned, completionRate };
   }
 }
 </script>

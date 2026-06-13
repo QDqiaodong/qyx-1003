@@ -35,3 +35,27 @@ export function isOverdue(timestamp) {
     const due = new Date(timestamp);
     return !isDueToday(timestamp) && due < now;
 }
+
+export function isDueWithin24h(timestamp) {
+    if (!timestamp) return false;
+    const now = new Date();
+    const due = new Date(timestamp);
+    const diff = due - now;
+    return diff > 0 && diff <= 24 * 60 * 60 * 1000;
+}
+
+export function isDueWithin3Days(timestamp) {
+    if (!timestamp) return false;
+    const now = new Date();
+    const due = new Date(timestamp);
+    const diff = due - now;
+    return diff > 0 && diff <= 3 * 24 * 60 * 60 * 1000;
+}
+
+export function getTaskRiskLevel(task) {
+    if (task.completed) return 'normal';
+    if (isOverdue(task.dueDate)) return 'overdue';
+    if (isDueWithin24h(task.dueDate)) return 'urgent';
+    if (isDueWithin3Days(task.dueDate)) return 'soon';
+    return 'normal';
+}

@@ -1,5 +1,5 @@
 <template>
-  <div :class="['card', 'premium-task-card', { 'is-completed': task.completed, 'is-expired': isTaskExpired }]">
+  <div :class="['card', 'premium-task-card', { 'is-completed': task.completed, [`is-${riskLevel}`]: !task.completed && riskLevel !== 'normal' }]">
     <div class="card-accent-strip"></div>
     
     <div class="task-control">
@@ -26,9 +26,10 @@
             <span class="meta-text">{{ task.assigneeName || '未指派' }}</span>
           </div>
           <div class="meta-dot"></div>
-          <div :class="['meta-item', { 'status-danger': isTaskExpired }]">
+          <div :class="['meta-item', `status-${riskLevel}`]">
             <span class="meta-icon">📅</span>
             <span class="meta-text">{{ formatTime(task.dueDate) }}</span>
+            <span v-if="!task.completed && riskLevel !== 'normal'" :class="['risk-tag', `risk-${riskLevel}`]">{{ riskLabel }}</span>
           </div>
         </div>
       </div>
@@ -88,7 +89,11 @@ export default {
       due_date: props.task.dueDate ? new Date(props.task.dueDate + 8 * 3600000).toISOString().slice(0, 16) : ''
     });
 
-    const isTaskExpired = computed(() => !props.task.completed && utils.isExpired(props.task.dueDate));
+    const riskLevel = computed(() => utils.getTaskRiskLevel(props.task));
+    const riskLabel = computed(() => {
+      const labels = { overdue: '已逾期', urgent: '即将到期', soon: '3天内到期' };
+      return labels[riskLevel.value] || '';
+    });
     const formatTime = (ts) => utils.formatDate(ts);
     const priorityLabel = computed(() => {
       const labels = { high: '紧急', medium: '普通', low: '次要' };
@@ -134,7 +139,7 @@ export default {
     };
 
     return { 
-        isEditing, editData, isTaskExpired, formatTime, 
+        isEditing, editData, riskLevel, riskLabel, formatTime, 
         toggleStatus, startEdit, cancelEdit, saveEdit, priorityLabel
     };
   }

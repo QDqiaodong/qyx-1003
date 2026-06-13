@@ -12,6 +12,8 @@
     --danger: #ef4444;
     --success: #10b981;
     --warning: #f59e0b;
+    --urgent: #f97316;
+    --soon: #3b82f6;
     --radius-sm: 8px;
     --radius-md: 14px;
     --radius-lg: 24px;
@@ -277,9 +279,30 @@ body {
 .is-completed { opacity: 0.6; }
 .is-completed .task-main-text { text-decoration: line-through; color: var(--text-muted); }
 
-.is-expired { border-left: 6px solid var(--danger); }
-.is-expired .card-accent-strip { background: var(--danger); opacity: 1; }
-.status-danger .meta-text { color: var(--danger); font-weight: 800; }
+.is-overdue { border-left: 6px solid var(--danger); }
+.is-overdue .card-accent-strip { background: var(--danger); opacity: 1; }
+.is-urgent { border-left: 6px solid var(--urgent); }
+.is-urgent .card-accent-strip { background: var(--urgent); opacity: 1; }
+.is-soon { border-left: 6px solid var(--soon); }
+.is-soon .card-accent-strip { background: var(--soon); opacity: 1; }
+
+.status-overdue .meta-text { color: var(--danger); font-weight: 800; }
+.status-urgent .meta-text { color: var(--urgent); font-weight: 700; }
+.status-soon .meta-text { color: var(--soon); font-weight: 700; }
+
+.risk-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1rem 0.45rem;
+  border-radius: 6px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  margin-left: 0.4rem;
+  line-height: 1.4;
+}
+.risk-overdue { background: #fee2e2; color: var(--danger); }
+.risk-urgent { background: #fff7ed; color: var(--urgent); }
+.risk-soon { background: #dbeafe; color: var(--soon); }
 
 /* Premium Checkbox */
 .task-control { padding-top: 0.25rem; }
@@ -807,7 +830,7 @@ body {
 /* Styles from TaskStats.vue */
 .stats-premium-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   grid-template-rows: auto auto;
   gap: 1.5rem;
 }
@@ -835,6 +858,8 @@ body {
 .success { background: #dcfce7; color: var(--success); }
 .warning { background: #fff7ed; color: var(--warning); }
 .danger { background: #fee2e2; color: var(--danger); }
+.urgent-widget-icon { background: #fff7ed; color: var(--urgent); }
+.soon-widget-icon { background: #dbeafe; color: var(--soon); }
 
 .widget-data { display: flex; flex-direction: column; gap: 0.1rem; }
 .widget-label { font-size: 0.8rem; font-weight: 700; color: var(--text-muted); opacity: 0.8; }
@@ -844,6 +869,8 @@ body {
 .success-text { color: var(--success); opacity: 1; }
 .warning-text { color: var(--warning); opacity: 1; }
 .danger-text { color: var(--danger); opacity: 1; }
+.urgent-text { color: var(--urgent); opacity: 1; }
+.soon-text { color: var(--soon); opacity: 1; }
 
 .user-summary-card {
   grid-column: span 2;
@@ -1217,12 +1244,28 @@ body {
 .focus-summary .summary-badge.badge-danger {
   background: #fee2e2;
   color: var(--danger);
-  animation: pulse-badge 2s infinite;
+  animation: pulse-badge-danger 2s infinite;
 }
 
-@keyframes pulse-badge {
+@keyframes pulse-badge-danger {
   0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
   50% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+}
+
+.focus-summary .summary-badge.badge-urgent {
+  background: #fff7ed;
+  color: var(--urgent);
+  animation: pulse-badge-urgent 2s infinite;
+}
+
+@keyframes pulse-badge-urgent {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(249, 115, 22, 0); }
+}
+
+.focus-summary .summary-badge.badge-soon {
+  background: #dbeafe;
+  color: var(--soon);
 }
 
 .focus-groups {
@@ -1252,6 +1295,16 @@ body {
 .focus-group.group-danger {
   border-top: 4px solid var(--danger);
   background: linear-gradient(180deg, rgba(254, 226, 226, 0.3) 0%, var(--card-bg) 100%);
+}
+
+.focus-group.group-urgent {
+  border-top: 4px solid var(--urgent);
+  background: linear-gradient(180deg, rgba(255, 237, 213, 0.4) 0%, var(--card-bg) 100%);
+}
+
+.focus-group.group-soon {
+  border-top: 4px solid var(--soon);
+  background: linear-gradient(180deg, rgba(219, 234, 254, 0.4) 0%, var(--card-bg) 100%);
 }
 
 .focus-group.group-warning {
@@ -1284,6 +1337,16 @@ body {
 .danger-icon {
   background: #fee2e2;
   color: var(--danger);
+}
+
+.urgent-icon {
+  background: #fff7ed;
+  color: var(--urgent);
+}
+
+.soon-icon {
+  background: #dbeafe;
+  color: var(--soon);
 }
 
 .warning-icon {
@@ -1320,6 +1383,16 @@ body {
 .group-count.danger-count {
   background: #fee2e2;
   color: var(--danger);
+}
+
+.group-count.urgent-count {
+  background: #fff7ed;
+  color: var(--urgent);
+}
+
+.group-count.soon-count {
+  background: #dbeafe;
+  color: var(--soon);
 }
 
 .group-count.warning-count {
@@ -1474,6 +1547,16 @@ body {
 .due-text.danger-text {
   color: var(--danger);
   font-weight: 800;
+}
+
+.due-text.urgent-text {
+  color: var(--urgent);
+  font-weight: 700;
+}
+
+.due-text.soon-text {
+  color: var(--soon);
+  font-weight: 700;
 }
 
 .due-text.warning-text {
