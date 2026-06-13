@@ -63,6 +63,10 @@
       </div>
 
       <div class="viewport-canvas">
+        <section class="today-focus-section">
+          <TodayFocus :tasks="tasks" :currentUser="currentUser" @update="fetchTasks" />
+        </section>
+
         <section class="overview-stats">
           <TaskStats :tasks="tasks" :currentUser="currentUser" />
         </section>

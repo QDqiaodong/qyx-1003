@@ -21,3 +21,17 @@ export function isNearExpiry(timestamp) {
     const diff = expiry - now;
     return diff > 0 && diff < 24 * 60 * 60 * 1000;
 }
+
+export function isDueToday(timestamp) {
+    if (!timestamp) return false;
+    const now = new Date();
+    const due = new Date(timestamp);
+    return now.toDateString() === due.toDateString();
+}
+
+export function isOverdue(timestamp) {
+    if (!timestamp) return false;
+    const now = new Date();
+    const due = new Date(timestamp);
+    return !isDueToday(timestamp) && due < now;
+}
