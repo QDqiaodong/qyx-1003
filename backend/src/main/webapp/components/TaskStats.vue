@@ -45,7 +45,7 @@
     </div>
 
     <div class="stat-widget glass">
-      <div class="widget-icon soon-widget-icon">�</div>
+      <div class="widget-icon soon-widget-icon">📅</div>
       <div class="widget-data">
         <span class="widget-label">3天内到期</span>
         <span class="widget-value">{{ soonCount }}</span>

@@ -31,9 +31,7 @@ export function isDueToday(timestamp) {
 
 export function isOverdue(timestamp) {
     if (!timestamp) return false;
-    const now = new Date();
-    const due = new Date(timestamp);
-    return !isDueToday(timestamp) && due < now;
+    return new Date(timestamp) < new Date();
 }
 
 export function isDueWithin24h(timestamp) {

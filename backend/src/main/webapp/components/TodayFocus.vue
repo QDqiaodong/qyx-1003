@@ -93,7 +93,7 @@
       <div class="focus-group glass" :class="{ 'group-soon': soonTasks.length > 0 }">
         <div class="group-header">
           <div class="group-title">
-            <span class="group-icon soon-icon">📆</span>
+            <span class="group-icon soon-icon">�</span>
             <h3>3天内到期</h3>
             <span class="group-count soon-count">{{ soonTasks.length }}</span>
           </div>
